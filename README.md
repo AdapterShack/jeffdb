@@ -33,7 +33,7 @@ Alternatively, you can build it and then run the JAR file directly:
 java -jar build/libs/jeffdb-0.0.1-SNAPSHOT.jar
 ```
 
-Either of these will result in an instance listening on port 8080 and storing it's files in ".jeffdb.data" as subdirectory of whatever directory you were in when you started it.
+Either of these will result in an instance listening on port 8080 and storing all files under an automatically created ".jeffdb.data" subdirectory of whatever directory you were in when you started it.
 
 ## REST API
 
