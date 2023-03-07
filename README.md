@@ -18,6 +18,23 @@ developing an extremely small Spring Boot project.
 
 This may be run as a standalone web app which provides a REST API, or embedded in another project as JAR file (only recommended if your data storage needs are truly minimal).
 
+## Running
+
+It's Spring Boot, so you can just run it with gradle:
+
+```
+./gradlew bootRun
+```
+
+Alternatively, you can build it and then run the JAR file directly:
+
+```
+./gradlew build
+java -jar build/libs/jeffdb-0.0.1-SNAPSHOT.jar
+```
+
+Either of these will result in an instance listening on port 8080 and storing it's files in ".jeffdb.data" as subdirectory of whatever directory you were in when you started it.
+
 ## REST API
 
 Read from collection "foo":
