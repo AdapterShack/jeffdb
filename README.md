@@ -70,7 +70,7 @@ curl -i -s http://localhost:8080/foo -X DELETE
 
 ## As a library
 
-All of the functions illustrated about can be done by calling `com.adaptershack.jeffdb.DatabaseService` directly from code.
+All of the functions illustrated above can be done by calling `com.adaptershack.jeffdb.DatabaseService` directly from code.
 
 ```
 		DatabaseService db = new DatabaseService();
