@@ -11,6 +11,7 @@ Features (or lack thereof):
 * Yes, the id field must literally be named "id".
 * Getting an object by its ID is simply asking the server to read that one file by name.
 * Getting an object by any other field, scans every file in the directory. In RDMS terms, every select is a table scan, and there are no indexes.
+* In the REST API, querying is limited to exact matching on one or more fields (using as a Java API is not subject to this limitation)
 * No attempt ever to lock anything or be safe for concurrent uses - we assume only one user at a time (if even one).
 
 You probably should not use this as a database. It was written mainly as an exercise in
@@ -105,4 +106,9 @@ All of the functions illustrated above can be done by calling `com.adaptershack.
 
 		// insert it in there
 		JsonNode inserted = db.insert("foo", node);
+		
+		// run arbitrary queries
+		JsonNode results = db.list("foo", (obj) -> obj.get("b").asInt() > obj.get("a").asInt() );
+		
+		
 ```

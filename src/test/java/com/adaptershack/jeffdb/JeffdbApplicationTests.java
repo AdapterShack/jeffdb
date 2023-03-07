@@ -165,8 +165,19 @@ class JeffdbApplicationTests {
 
 		// insert it in there
 		JsonNode inserted = db.insert("foo", node);
+
+		// run arbitrary queries
+		JsonNode results = db.list("foo", (obj) -> obj.get("b").asInt() > obj.get("a").asInt() );
+		
+		assertEquals(1, results.size());
 		
 		String id = inserted.get("id").asText();
+
+		assertEquals(id, results.get(0).get("id").asText());
+
+		results = db.list("foo", (obj) -> obj.get("b").asInt() < obj.get("a").asInt() );
+
+		assertEquals(0, results.size());
 		
 		assertTrue( new File( root ).exists());
 		
