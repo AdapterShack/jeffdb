@@ -52,14 +52,16 @@ public class DatabaseService {
 	}
 
 	private void selfInit() {
+
+		// don't do this - make them initialize us
 		
-		if(objectMapper == null) {
-			objectMapper = new ObjectMapper();
-		}
-		
-		if(rootDirectory==null) {
-			rootDirectory="jeffdb";
-		}
+//		if(objectMapper == null) {
+//			objectMapper = new ObjectMapper();
+//		}
+//		
+//		if(rootDirectory==null) {
+//			rootDirectory="jeffdb";
+//		}
 		
 	}
 	
