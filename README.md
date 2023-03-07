@@ -18,7 +18,7 @@ developing an extremely small Spring Boot project.
 
 This may be run as a standalone web app which provides a REST API, or embedded in another project as JAR file (only recommended if your data storage needs are truly minimal).
 
-##REST API
+## REST API
 
 Read from collection "foo":
 
