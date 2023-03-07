@@ -124,6 +124,8 @@ public class DatabaseService {
 	 */
 	public ObjectNode get(String collection, String id) {
 
+		checkRegex(id);
+
 		File collectionDir = directoryExists(collection);
 		
 		File rowFile = new File( collectionDir, id + DOT_JSON );
@@ -149,6 +151,8 @@ public class DatabaseService {
 	 */
 	public boolean delete(String collection, String id) {
 		
+		checkRegex(id);
+
 		File collectionDir = directoryExists(collection);
 
 		File rowFile = new File( collectionDir, id + DOT_JSON );
