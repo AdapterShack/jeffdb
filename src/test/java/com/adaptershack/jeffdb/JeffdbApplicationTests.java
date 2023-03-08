@@ -178,6 +178,17 @@ class JeffdbApplicationTests {
 		results = db.list("foo", (obj) -> obj.get("b").asInt() < obj.get("a").asInt() );
 
 		assertEquals(0, results.size());
+
+		ObjectNode node2 = objectMapper.createObjectNode();
+		node2.put("name", "Jeff");
+		db.insert("bar", node2);
+		
+		assertEquals(1, db.listAll("bar").size());
+		assertEquals("Jeff",  db.listAll("bar").get(0).get("name").asText());
+		
+		db.deleteMatching("bar", obj -> obj.get("name").asText().equalsIgnoreCase("jeff") );
+		
+		assertEquals(0, db.listAll("bar").size());
 		
 		assertTrue( new File( root ).exists());
 		

@@ -182,8 +182,7 @@ public class DatabaseService {
 	 * 
 	 * Example:
 	 * 
-	 * JsonNode result =
-	 *    list(collection, (obj) -> obj.get("name").equalsIgnoreCase("jeff") );
+     *   list("bar", obj -> obj.get("name").asText().equalsIgnoreCase("jeff") );
 	 * 
 	 * 
 	 * @param collection
@@ -216,8 +215,7 @@ public class DatabaseService {
 	 * 
 	 * Example:
 	 * 
-	 *    deleteMatching(collection, (obj) -> obj.get("name").equalsIgnoreCase("jeff") );
-	 * 
+     *   deleteMatching("bar", obj -> obj.get("name").asText().equalsIgnoreCase("jeff") );
 	 * 
 	 * @param collection
 	 * @param predicate
