@@ -349,15 +349,10 @@ public class DatabaseService {
 	 */
 	public <T> void list(String collection, Collection<T> list, Class<T> clazz, Predicate<T> predicate ) {
 
-		readAllFiles(collection, rowFile ->
+		readAll(collection, clazz, obj ->
 		{
-			try {
-				T obj = objectMapper.readValue(rowFile, clazz);
-				if(predicate == null || predicate.test(obj)) {
-					list.add(obj);
-				}
-			} catch (IOException e) {
-				throw new RuntimeException(e);
+			if(predicate == null || predicate.test(obj)) {
+				list.add(obj);
 			}
 			
 		});
@@ -380,18 +375,11 @@ public class DatabaseService {
 	 */
 	public ArrayNode list(String collection, Predicate<JsonNode> predicate ) {
 
-		File collectionDir = directoryExists(collection);
-		
 		ArrayNode list = objectMapper.createArrayNode();
 		
-		readAllFiles(collection, rowFile -> {
-			try {
-				JsonNode row = objectMapper.readTree(rowFile);
-				if(predicate == null || predicate.test(row)) {
-					list.add(row);
-				}
-			} catch (IOException e) {
-				throw new RuntimeException(e);
+		readAll(collection, row -> {
+			if(predicate == null || predicate.test(row)) {
+				list.add(row);
 			}
 		});
 		
@@ -473,6 +461,40 @@ public class DatabaseService {
 		
 	}
 	
+	/**
+	 * Iterates the collection, passing each item to the specified consumer.
+	 * It is up to the consumer to decide what to the do with it.
+	 * 
+	 * @param collection
+	 * @param c
+	 */
+	public void readAll(String collection, Consumer<JsonNode> c){
+		readAllFiles(collection, rowFile -> {
+			try {
+				c.accept( objectMapper.readTree(rowFile) );
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		});
+	}
+
+	/**
+	 * Iterates the collection, deserialzing each item as the specified
+	 * Java class and passing it to the specified consumer.
+	 * It is up to the consumer to decide what to the do with it.
+	 * 
+	 * @param collection
+	 * @param c
+	 */
+	public <T> void readAll(String collection, Class<T> clazz, Consumer<T> c){
+		readAllFiles(collection, rowFile -> {
+			try {
+				c.accept( objectMapper.readValue(rowFile,clazz) );
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		});
+	}
 	
 	
 	/*
