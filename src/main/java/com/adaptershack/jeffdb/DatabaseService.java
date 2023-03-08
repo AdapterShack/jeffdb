@@ -1,19 +1,29 @@
 package com.adaptershack.jeffdb;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -98,6 +108,54 @@ public class DatabaseService {
 		
 	}
 
+	
+	/**
+	 * Adds a Java object to the collection by first serializing it
+	 * as Json.
+	 * 
+	 * The object does not need to extend any particular
+	 * superclass or implement any interface, but it must have a public
+	 * getter/setter for a String id. 
+	 * 
+	 * @param <T>
+	 * @param collection
+	 * @param row
+	 * @return
+	 */
+	public <T> T insert(String collection, T row) {
+		
+		File collectionDir = directoryExists(collection);
+		
+		String id = null;
+		
+		try {
+			id = (String) PropertyUtils.getProperty(row, ID);
+			
+			if(id == null) {
+				id = generateId();
+				PropertyUtils.setProperty(row,ID, id);
+			}
+
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		
+		
+		checkRegex(id);
+		
+		File rowFile = new File( collectionDir, id + DOT_JSON );
+		
+		try {
+			objectMapper.writeValue(rowFile, row);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		
+		return row;
+		
+	}
+	
+	
 
 	/**
 	 * Stores the object under the specified ID.
@@ -115,6 +173,34 @@ public class DatabaseService {
 		
 	}
 
+	/**
+	 * Stores any object under the specified ID by serializing it as Json.
+	 * 
+	 * The object does not need to extend any particular
+	 * superclass or implement any interface, but it must have a public
+	 * getter/setter for a String id. 
+	 * 
+	 * @param <T>
+	 * 
+	 * @param collection
+	 * @param id
+	 * @param row
+	 * @return
+	 */
+	public <T> T update(String collection, String id, T row) {
+
+		try {
+			PropertyUtils.setProperty(row,ID, id);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		
+		return insert(collection,row);
+		
+	}
+	
+	
+	
 	/**
 	 * Gets the object specified by the id, from the specified collection.
 	 * 
@@ -141,6 +227,36 @@ public class DatabaseService {
 		}
 		
 	}
+
+	/**
+	 * Gets the object specified by the id, from the specified collection.
+	 * @param <T>
+	 * 
+	 * @param collection
+	 * @param id
+	 * @return
+	 */
+	public <T> T get(String collection, String id, Class<T> clazz) {
+
+		checkRegex(id);
+
+		File collectionDir = directoryExists(collection);
+		
+		File rowFile = new File( collectionDir, id + DOT_JSON );
+		
+		if(!rowFile.exists()) {
+			return null;
+		}
+		
+		try {
+			return objectMapper.readValue(rowFile,clazz);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		
+	}
+	
+	
 	
 	/**
 	 * Deletes the object specified by the ID.
@@ -176,6 +292,54 @@ public class DatabaseService {
 		return list(collection,null);
 	}
 
+	
+
+	
+	/**
+	 * Deserializes all the Json data in the collection to a list of objects of the specified
+	 * class.
+	 * 
+	 * @param <T>
+	 * @param collection
+	 * @param clazz
+	 * @param predicate
+	 * @return
+	 */
+	public <T> List<T> listAll(String collection, Class<T> clazz ) {
+		return list(collection,clazz,null);
+	}
+	
+	/**
+	 * Deserializes all the Json data in the collection to a list of objects of the specified
+	 * class, subject to the predicate returning true.
+	 * 
+	 * @param <T>
+	 * @param collection
+	 * @param clazz
+	 * @param predicate
+	 * @return
+	 */
+	public <T> List<T> list(String collection, Class<T> clazz, Predicate<T> predicate ) {
+
+		List<T> list = new ArrayList<T>();
+		
+		readAllFiles(collection, r ->
+		{
+			try {
+				T obj = objectMapper.readValue(r, clazz);
+				if(predicate == null || predicate.test(obj)) {
+					list.add(obj);
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+			
+		});
+		
+		return list;
+	}
+	
+	
 	
 	/**
 	 * Finds all objects in the collection where the predicate returns true.
@@ -308,6 +472,21 @@ public class DatabaseService {
 		}
 		return collectionDir;
 	}
+	
+	private void readAllFiles(String collection, Consumer<File> consumer ) {
+
+		File collectionDir = directoryExists(collection);
+		
+		ArrayNode list = objectMapper.createArrayNode();
+		
+		for( File rowFile : collectionDir.listFiles( (dir,name) -> name.endsWith(DOT_JSON))) {
+
+			consumer.accept(rowFile);
+		
+		}
+		
+	}
+	
 
 	private void checkRegex(String collection) {
 		if( !collection.matches(REGEX) ) {
