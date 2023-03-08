@@ -9,6 +9,7 @@ import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -313,6 +314,10 @@ public class DatabaseService {
 	 * Deserializes all the Json data in the collection to a list of objects of the specified
 	 * class, subject to the predicate returning true.
 	 * 
+	 * Example:
+	 * 
+	 * list("foo", MyClass.class, o -> o.getName().equalsIgnoreCase("jeff") );
+	 * 
 	 * @param <T>
 	 * @param collection
 	 * @param clazz
@@ -322,11 +327,32 @@ public class DatabaseService {
 	public <T> List<T> list(String collection, Class<T> clazz, Predicate<T> predicate ) {
 
 		List<T> list = new ArrayList<T>();
-		
-		readAllFiles(collection, r ->
+		list(collection,list,clazz,predicate);
+		return list;
+	}
+	
+	
+	/**
+	 * Deserializes all the Json data in the collection to a list of objects of the specified
+	 * class, tests each using the specified predicate, and adds the objects to the specified
+	 * container if true.
+	 * 
+	 * Example:
+	 * 
+	 * list("foo", myList, MyClass.class, o -> o.getName().equalsIgnoreCase("jeff") );
+	 * 
+	 * @param <T>
+	 * @param collection
+	 * @param clazz
+	 * @param predicate
+	 * @return
+	 */
+	public <T> void list(String collection, Collection<T> list, Class<T> clazz, Predicate<T> predicate ) {
+
+		readAllFiles(collection, rowFile ->
 		{
 			try {
-				T obj = objectMapper.readValue(r, clazz);
+				T obj = objectMapper.readValue(rowFile, clazz);
 				if(predicate == null || predicate.test(obj)) {
 					list.add(obj);
 				}
@@ -336,9 +362,8 @@ public class DatabaseService {
 			
 		});
 		
-		return list;
 	}
-	
+
 	
 	
 	/**
@@ -359,7 +384,7 @@ public class DatabaseService {
 		
 		ArrayNode list = objectMapper.createArrayNode();
 		
-		for( File rowFile : collectionDir.listFiles( (dir,name) -> name.endsWith(DOT_JSON))) {
+		readAllFiles(collection, rowFile -> {
 			try {
 				JsonNode row = objectMapper.readTree(rowFile);
 				if(predicate == null || predicate.test(row)) {
@@ -368,7 +393,7 @@ public class DatabaseService {
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
-		}
+		});
 		
 		return list;
 	}

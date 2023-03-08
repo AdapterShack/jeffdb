@@ -91,24 +91,36 @@ curl -i -s http://localhost:8080/foo -X DELETE
 All of the functions illustrated above can be done by calling `com.adaptershack.jeffdb.DatabaseService` directly from code.
 
 ```
-		DatabaseService db = new DatabaseService();
-		
-		// set whatever directory you want the files to go in
-		db.setRootDirectory(root);
-		
-		// whatever instance of Jackson's ObjectMapper your project already uses
-		db.setObjectMapper(objectMapper);
+DatabaseService db = new DatabaseService();
 
-		// junk up some data
-		ObjectNode node = objectMapper.createObjectNode();
-		node.put("a", 1);
-		node.put("b", 2);
+// set whatever directory you want the files to go in
+db.setRootDirectory(root);
 
-		// insert it in there
-		JsonNode inserted = db.insert("foo", node);
-		
-		// run arbitrary queries
-		JsonNode results = db.list("foo", (obj) -> obj.get("b").asInt() > obj.get("a").asInt() );
-		
+// whatever instance of Jackson's ObjectMapper your project already uses
+db.setObjectMapper(objectMapper);
+
+// junk up some data
+ObjectNode node = objectMapper.createObjectNode();
+node.put("a", 1);
+node.put("b", 2);
+
+// insert it in there
+JsonNode inserted = db.insert("foo", node);
+
+// run arbitrary queries
+JsonNode results = db.list("foo", (obj) -> obj.get("b").asInt() > obj.get("a").asInt() );
+
+// serialize any object that has getters/setters for a String "id"
+
+IdHavingObject obj = new IdHavingObject();
+obj.setName("jeff");
+
+IdHavingObject insertedObj = db.insert("baz", obj);
+
+String id = insertedObj.getId();
+
+List<IdHavingObject> list =
+		db.list("baz", IdHavingObject.class, o -> o.getName().equalsIgnoreCase("jeff"));
+
 		
 ```

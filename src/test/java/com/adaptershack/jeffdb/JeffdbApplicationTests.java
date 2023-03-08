@@ -219,6 +219,11 @@ class JeffdbApplicationTests {
 
 			db.update("baz",insertedObj.getId(), obj);
 			
+			db.insert("baz", new IdHavingObject("ffej") );
+
+			assertEquals(2, db.listAll("baz", IdHavingObject.class).size());
+			assertEquals(2, db.listAll("baz").size());
+			
 			List<IdHavingObject> list2 =
 				db.list("baz", IdHavingObject.class, o -> o.getName().equalsIgnoreCase("jeff"));
 			
@@ -264,6 +269,11 @@ class JeffdbApplicationTests {
 			this.name = name;
 		}
 
+		public IdHavingObject(String name) {
+			this.name = name;
+		}
+		
+		
 		public String getId() {
 			return id;
 		}
