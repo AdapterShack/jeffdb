@@ -43,7 +43,7 @@ public class DatabaseService {
 	/* The root directory where all files live.
 	 * When running in Spring Boot this is injected from the properties file.
 	 */
-	@Value("${com.adaptershack.jeffdb.root}")
+	@Value("${com.adaptershack.jeffdb.root:.jeffdb.data}")
 	String rootDirectory;
 	
 	/*
