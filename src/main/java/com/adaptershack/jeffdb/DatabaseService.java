@@ -60,7 +60,7 @@ public class DatabaseService {
 		this.archiveName = archiveName;
 	}
 
-	@Value("${com.adaptershack.jeffdb.root:archive}")
+	@Value("${com.adaptershack.jeffdb.archive:archive}")
 	private String archiveName = "archive";
 	
 	/*
@@ -548,6 +548,39 @@ public class DatabaseService {
 		
 		
 	}
+	
+	/**
+	 * Empties the "recycle bin" of objects that have been "archived".
+	 * 
+	 * @param collection
+	 */
+	public void purge(String collection) {
+	
+		File collectionDirecory = directoryExists(collection);
+		
+		File archiveDirectory = new File(collectionDirecory,archiveName);
+
+		if(archiveDirectory.exists()) {
+			FileSystemUtils.deleteRecursively(archiveDirectory);
+		}
+	}
+	
+	/**
+	 * Permanently deletes the entire database including all collections
+	 * and all archived objects.
+	 * 
+	 * @param collection
+	 */
+	public void destroyDatabase() {
+	
+		File rootFile = new File(rootDirectory);
+		
+		if(rootFile.exists()) {
+			FileSystemUtils.deleteRecursively(rootFile);
+		}
+		
+	}
+	
 	
 	/*
 	 * "Magic" constants

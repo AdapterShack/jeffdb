@@ -236,6 +236,15 @@ class JeffdbApplicationTests {
 			assertEquals(0, db.listAll("baz").size() );
 
 			assertNotEquals(0, new File( new File(db.getRootDirectory(), "baz"), db.getArchiveName() ).listFiles().length );
+
+			db.purge("baz");
+
+			assertFalse(new File( new File(db.getRootDirectory(), "baz"), db.getArchiveName() ).exists() );
+			
+			db.destroyDatabase();
+
+			assertFalse(new File(db.getRootDirectory()).exists() );
+			
 			
 		} finally {
 		
