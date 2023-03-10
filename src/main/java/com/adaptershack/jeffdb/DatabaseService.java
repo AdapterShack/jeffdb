@@ -7,6 +7,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,6 +51,17 @@ public class DatabaseService {
 	 */
 	@Autowired
 	ObjectMapper objectMapper;
+
+	public String getArchiveName() {
+		return archiveName;
+	}
+
+	public void setArchiveName(String archiveName) {
+		this.archiveName = archiveName;
+	}
+
+	@Value("${com.adaptershack.jeffdb.root:archive}")
+	private String archiveName = "archive";
 	
 	/*
 	 * Getters and setters, for manual (non-injected) usage.
@@ -495,7 +507,47 @@ public class DatabaseService {
 			}
 		});
 	}
+
 	
+	public void archive(String collection) {
+		archive(collection,null);
+	}
+	
+	/**
+	 * Moves the current contents of the collection to an "archive" location,
+	 * notionally like a "recycle bin".
+	 * 
+	 * @param collection
+	 */
+	public void archive(String collection, Predicate<JsonNode> predicate) {
+		
+		File collectionDirecory = directoryExists(collection);
+		
+		File archiveDirectory = new File(collectionDirecory,archiveName);
+
+		if(!archiveDirectory.exists()) {
+			archiveDirectory.mkdirs();
+        }		
+		
+		readAllFiles(collection, f -> {
+			
+			try {
+				if(predicate == null || predicate.test(objectMapper.readTree(f))) {
+					
+					File destination = new File(archiveDirectory, f.getName());
+					
+					Files.move(Path.of(f.toURI()), Path.of(destination.toURI()));
+					
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+			
+			
+		});
+		
+		
+	}
 	
 	/*
 	 * "Magic" constants

@@ -3,6 +3,7 @@ package com.adaptershack.jeffdb;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
@@ -230,7 +231,12 @@ class JeffdbApplicationTests {
 			assertEquals(1, list2.size());
 			assertEquals("Jeff", list2.get(0).getName());
 			
+			db.archive("baz");
+			
+			assertEquals(0, db.listAll("baz").size() );
 
+			assertNotEquals(0, new File( new File(db.getRootDirectory(), "baz"), db.getArchiveName() ).listFiles().length );
+			
 		} finally {
 		
 			FileSystemUtils.deleteRecursively(new File(root));		
